@@ -53,7 +53,8 @@ export function parsePaymentPlannerParams(
 ): IPaymentPlannerConfig {
   const p = params ?? {};
 
-  // TODO: Implement full defensive parsing according to the specification.
+  const rawRowLimit = p.rowLimit ?? p.maxRows;
+
   return {
     description:
       typeof p.description === 'string' && p.description.trim()
@@ -70,8 +71,13 @@ export function parsePaymentPlannerParams(
         ? Math.max(0, Math.round(p.selectedCount))
         : DEFAULT_SELECTED_COUNT,
     currencyIds: Array.isArray(p.currencyIds)
-      ? p.currencyIds.filter(
-          (id): id is number => typeof id === 'number' && Number.isFinite(id),
+      ? Array.from(
+          new Set(
+            p.currencyIds.filter(
+              (id): id is number =>
+                typeof id === 'number' && Number.isFinite(id),
+            ),
+          ),
         )
       : [],
     providerId:
@@ -85,8 +91,8 @@ export function parsePaymentPlannerParams(
     amountFormat: AMOUNT_FORMATS.includes(p.amountFormat as TAmountFormat)
       ? (p.amountFormat as TAmountFormat)
       : 'grouped',
-    rowLimit: WIDGET_ROW_LIMITS.includes(p.rowLimit as TWidgetRowLimit)
-      ? (p.rowLimit as TWidgetRowLimit)
+    rowLimit: WIDGET_ROW_LIMITS.includes(rawRowLimit as TWidgetRowLimit)
+      ? (rawRowLimit as TWidgetRowLimit)
       : DEFAULT_ROW_LIMIT,
     showCustomerBills:
       typeof p.showCustomerBills === 'boolean' ? p.showCustomerBills : true,
